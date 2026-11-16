@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsRuleValueMapper">
+
+    <select id="list" resultType="com.sqx.modules.goods.entity.GoodsRuleValue">
+        SELECT
+            grv.id,
+            grv.rule_id,
+            grvi.detail,
+            grvi.`value`,
+            grvi.language_type,
+            grvi.language_name
+        FROM
+            goods_rule_value AS grv
+        LEFT JOIN goods_rule_value_i18n AS grvi ON grv.id = grvi.rule_value_id
+        <where>
+            <if test="ruleId != null">
+                and grv.rule_id = #{ruleId}
+            </if>
+            <if test="languageType != null and languageType != ''">
+                and grvi.language_type = #{languageType}
+            </if>
+        </where>
+    </select>
+</mapper>

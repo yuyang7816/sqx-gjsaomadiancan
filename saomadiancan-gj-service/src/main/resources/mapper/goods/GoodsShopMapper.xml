@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsShopDao">
+
+    <select id="selectAllShop" resultType="com.sqx.modules.goods.entity.GoodsShop">
+        select * from goods_shop where 1 = 1
+        <if test="shopName!=null and shopName!=''">
+            and shop_name like concat('%',#{shopName},'%')
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="selectAllShopByAdmin" resultType="com.sqx.modules.goods.entity.GoodsShop">
+        select gs.* from goods_shop gs left join sys_user_shop sus on sus.shop_id = gs.shop_id where 1 = 1
+        and sus.user_id = #{userId}
+        <if test="shopName!=null and shopName!=''">
+            and shop_name like concat('%',#{shopName},'%')
+        </if>
+        order by gs.create_time desc
+    </select>
+
+
+    <select id="selectListByAdmin" resultType="com.sqx.modules.goods.entity.GoodsShop">
+        select gs.*
+        from goods_shop gs
+                 left join sys_user_shop sus on sus.shop_id = gs.shop_id
+        where 1 = 1
+          and sus.user_id = #{userId}
+    </select>
+
+    <select id="selectAdminGoodsList" resultType="com.sqx.modules.goods.entity.Goods">
+        select
+            g.goods_id,
+            g.classify_id,
+            g.goods_cover,
+            g.goods_picture,
+            g.create_time,
+            g.sales_volume,
+            g.`status`,
+            g.pack_money,
+            g.goods_money,
+            g.original_money,
+            g.shop_id,
+            gi.goods_name,
+            gi.goods_synopsis,
+            gi.goods_describe,
+            gi.goods_label,
+            gi.language_type,
+            gi.language_name,
+            gs.classify_name as classifyName
+        from goods g
+            left join goods_i18n gi on g.goods_id = gi.goods_id
+            left join goods_classify_i18n gs on g.classify_id = gs.classify_id and gs.language_type = #{languageType}
+        where 1 = 1
+        <if test="classifyId!=null">
+            and g.classify_id = #{classifyId}
+        </if>
+        <if test="goodsName!=null and goodsName!=''">
+            and g.goods_name like concat('%',#{goodsName},'%')
+        </if>
+        <if test="status!=null">
+            and g.status = #{status}
+        </if>
+        <if test="languageType != null and languageType != ''">
+            and gi.language_type = #{languageType}
+        </if>
+        and g.shop_id = 0
+        order by g.create_time desc
+    </select>
+
+    <select id="selectGoodsByShopId" resultType="com.sqx.modules.goods.entity.Goods">
+        select
+            g.goods_id,
+            g.classify_id,
+            g.goods_cover,
+            g.goods_picture,
+            g.create_time,
+            g.sales_volume,
+            g.`status`,
+            g.pack_money,
+            g.goods_money,
+            g.original_money,
+            g.shop_id,
+            gi.goods_name,
+            gi.goods_synopsis,
+            gi.goods_describe,
+            gi.goods_label,
+            gi.language_type,
+            gi.language_name,
+        gci.classify_name as classifyName, gsr.inventory as inventory, gsr.status as gsrStatus from
+        goods_shop_relevancy gsr
+        left join goods g on gsr.goods_id = g.goods_id
+        left join goods_i18n gi on g.goods_id = gi.goods_id
+        left join goods_classify gc on g.classify_id = gc.classify_id
+        left join goods_classify_i18n gci on gc.classify_id = gci.classify_id
+        where gsr.shop_id = #{shopId} and g.status = 0
+        <if test="goodsName!=null and goodsName!=''">
+            and g.goods_name like concat('%',#{goodsName},'%')
+        </if>
+        <if test="classifyId!=null">
+            and g.classify_id = #{classifyId}
+        </if>
+        <if test="status!=null">
+            and gsr.status = #{status}
+        </if>
+        <if test="languageType != null and languageType != ''">
+            and gci.language_type = #{languageType}
+            and gi.language_type = #{languageType}
+        </if>
+        order by gsr.create_time desc
+    </select>
+
+    <select id="selectGoodsByShopIdAndGoodsId" resultType="com.sqx.modules.goods.entity.Goods">
+        select g.*, gc.classify_name as classifyName, gsr.inventory as inventory, gsr.status as gsrStatus
+        from goods_shop_relevancy gsr
+                 left join goods g on gsr.goods_id = g.goods_id
+                 left join goods_classify gc on g.classify_id = gc.classify_id
+        where gsr.shop_id = #{shopId}
+          and gsr.goods_id = #{goodsId}
+    </select>
+
+    <select id="selectGoodsByNotShopId" resultType="com.sqx.modules.goods.entity.Goods">
+        select g.*, gc.classify_name as classifyName from goods g
+        left join goods_classify gc on g.classify_id = gc.classify_id
+        where g.goods_id not in (select gsr.goods_id from goods_shop_relevancy gsr where gsr.shop_id = #{shopId})
+        and g.status = 0 and g.shop_id =0
+        <if test="goodsName!=null and goodsName!=''">
+            and g.goods_name like concat('%',#{goodsName},'%')
+        </if>
+    </select>
+
+    <insert id="addGoodsByShopId" parameterType="com.sqx.modules.goods.entity.GoodsShopRelevancy">
+        insert into goods_shop_relevancy (shop_id, goods_id, status, create_time, sales, inventory) values
+        <foreach item="item" collection="goodsShopRelevancyList" separator=",">
+            (#{item.shopId}, #{item.goodsId}, 0, #{date}, 0, 999)
+        </foreach>
+    </insert>
+
+    <delete id="deleteGoodsByShopId">
+        delete
+        from goods_shop_relevancy
+        where shop_id = #{shopId}
+          and goods_id = #{goodsId}
+    </delete>
+
+    <update id="soldOutOrPutaway">
+        update goods_shop_relevancy
+        set status = #{status}
+        where shop_id = #{shopId}
+          and goods_id = #{goodsId}
+    </update>
+
+    <select id="selectStoreCount" resultType="int">
+        select count(*) from tb_order where shop_id = #{shopId}
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectStoreMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where shop_id = #{shopId}
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectStoreMessage" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, gs.shop_name as shopName from tb_order tor left join goods_shop gs on tor.shop_id = gs.shop_id
+        where 1 = 1
+        <if test="status!=null and status!=''">
+            and tor.status = #{status}
+        </if>
+        <if test="shopId!=null">
+            and tor.shop_id = #{shopId}
+        </if>
+        <if test="orderNumber!=null and orderNumber!=''">
+            and tor.order_number = #{orderNumber}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(tor.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(tor.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(tor.create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        order by tor.pay_time desc
+    </select>
+
+    <select id="selectTakeCount" resultType="int">
+        select count(*) from tb_order where 1=1
+        <if test="orderType!=null and orderType==1">
+            and order_type in (1,3)
+        </if>
+        <if test="orderType!=null and orderType==2">
+            and order_type =2
+        </if>
+
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectTakeMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where 1=1
+        <if test="orderType!=null and orderType==1">
+            and order_type in (1,3)
+        </if>
+        <if test="orderType!=null and orderType==2">
+            and order_type =2
+        </if>
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="cancelOrderCount" resultType="int">
+        select count(*) from tb_order where status = 5
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="cancelOrderMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money), 0) from tb_order where status = 5
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+</mapper>

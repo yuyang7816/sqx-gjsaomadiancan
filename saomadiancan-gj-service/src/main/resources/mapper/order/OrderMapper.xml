@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.order.dao.AppOrderDao">
+
+    <select id="selectOrderList" resultType="com.sqx.modules.order.entity.TbOrder">
+        select * from tb_order where user_id = #{userId}
+        <if test="orderType!=null">
+            and order_type = #{orderType}
+        </if>
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="status!=null">
+            <if test="status == 0">
+                and status = 0
+            </if>
+            <if test="status == 1">
+                and status = 1
+            </if>
+            <if test="status == 2">
+                and status = 2
+            </if>
+            <if test="status == 3">
+                and status in (6, 3, 4, 5)
+            </if>
+        </if>
+    </select>
+
+    <insert id="insertOrder" parameterType="com.sqx.modules.order.entity.TbOrder" useGeneratedKeys="true"
+            keyProperty="orderId">
+        insert into tb_order (coupon_id, user_id, user_name, phone, address, order_number, is_pay, pay_time,
+                              order_code, order_type, pack_money, errand_money, status, delete_flag, parent_user_id,
+                              shop_id, parent_id, create_time)
+        values (#{couponId}, #{userId}, #{userName}, #{phone}, #{address}, #{orderNumber}, #{isPay}, #{payTime},
+                #{orderCode}, #{orderType}, #{packMoney}, #{errandMoney}, #{status}, #{deleteFlag}, #{parentUserId},
+                #{shopId}, #{parentId}, #{createTime})
+    </insert>
+
+    <select id="selectOrder" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, tu.avatar as avatar, gs.shop_name as shopName, tcu.money as couponMoney from tb_order tor
+        left join tb_user tu on tor.user_id = tu.user_id
+        left join goods_shop gs on tor.shop_id = gs.shop_id
+        left join tb_coupon_user tcu on tor.coupon_id = tcu.id
+        where 1 = 1 and tor.is_pay = 1
+        <if test="userName!=null and userName!=''">
+            and tor.user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and tor.phone like concat('%',#{phone},'%')
+        </if>
+        <if test="orderNumber!=null and orderNumber!=''">
+            and tor.order_number = #{orderNumber}
+        </if>
+        <if test="status!=null">
+            and tor.status = #{status}
+        </if>
+        <if test="shopId!=null">
+            and tor.shop_id = #{shopId}
+        </if>
+        <if test="orderType!=null">
+            and tor.order_type = #{orderType}
+        </if>
+        order by tor.create_time desc
+    </select>
+
+    <select id="selectOrderByAdmin" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, tu.avatar as avatar, gs.shop_name as shopName, tcu.money as couponMoney from sys_user_shop sus
+        left join tb_order tor on sus.shop_id = tor.shop_id
+        left join tb_user tu on tor.user_id = tu.user_id
+        left join goods_shop gs on tor.shop_id = gs.shop_id
+        left join tb_coupon_user tcu on tor.coupon_id = tcu.id
+        where 1 = 1 and sus.user_id = #{userId}
+        <if test="userName!=null and userName!=''">
+            and tor.user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and tor.phone like concat('%',#{phone},'%')
+        </if>
+        <if test="orderNumber!=null and orderNumber!=''">
+            and tor.order_number = #{orderNumber}
+        </if>
+        <if test="status!=null">
+            and tor.status = #{status}
+        </if>
+        <if test="shopId!=null">
+            and tor.shop_id = #{shopId}
+        </if>
+        <if test="orderType!=null">
+            and tor.order_type = #{orderType}
+        </if>
+        <if test="isPay != null">
+            and tor.is_pay = #{isPay}
+        </if>
+        order by tor.create_time desc
+    </select>
+
+    <select id="selectCountOrderByUserId" resultType="int">
+        select count(*) from tb_order where user_id = #{userId}
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectSunMoneyByUserId" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where user_id = #{userId}
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectOrderDetails" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, gs.shop_name as shopName
+        from tb_order tor
+                 left join goods_shop gs on tor.shop_id = gs.shop_id
+        where user_id = #{userId}
+          and tor.status in (6, 3, 4, 5)
+        order by pay_time desc
+    </select>
+
+    <select id="waitTakeFood" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, tu.avatar as avatar,
+        (select count(*) from tb_order where order_type = 1 and status in (6, 3) and pay_time &lt; tor.pay_time
+        and shop_id = tor.shop_id) as countOrder
+        from tb_order tor
+        left join tb_user tu on tor.user_id = tu.user_id
+        where tor.user_id = #{userId}
+        and order_type = #{orderType}
+        <if test="status!=null">
+            and tor.status = #{status}
+        </if>
+        <if test="status==null">
+            and tor.status in (6, 3, 4, 5)
+        </if>
+        order by pay_time desc
+    </select>
+
+
+    <select id="selectCountOrderByTime" resultType="int">
+        select count(*)
+        from tb_order
+        where order_type = 1
+          and status = 3
+          and pay_time &lt; #{payTime}
+          and shop_id = #{shopId}
+    </select>
+
+    <update id="deleteCouponByOrderId">
+        update tb_order
+        set coupon_id = null
+        where order_id = #{orderId}
+    </update>
+
+    <select id="selectSumMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where status in (3,4)
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectCountOrder" resultType="int">
+        select count(*) from tb_order where status in (3,4)
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <update id="updateorderStatus">
+        update tb_order
+        set status = 4
+        where update_time &lt; #{date}
+          and status = 3
+    </update>
+
+    <select id="selectOrderByTimeList" resultType="com.sqx.modules.order.entity.TbOrder">
+        select *
+        from tb_order
+        where update_time &lt; #{date}
+          and status = 3
+    </select>
+    <select id="getShopUser" resultType="java.lang.Integer">
+        SELECT COUNT(0)
+        FROM (SELECT user_id
+              FROM tb_order t
+              WHERE t.shop_id = #{shopId}
+              GROUP BY t.user_id) AS t1
+
+    </select>
+
+
+    <select id="queryByOrderNum" resultType="com.sqx.modules.order.entity.TbOrder">
+        select
+            *
+        from
+            tb_order
+        <where>
+            1=1
+            <if test="orderNum != null and orderNum != ''">
+                and order_number = #{orderNum}
+            </if>
+        </where>
+    </select>
+</mapper>

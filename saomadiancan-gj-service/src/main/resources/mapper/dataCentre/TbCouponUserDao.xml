@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.datacentre.dao.DataCentreDao">
+
+    <!--总用户数-->
+    <select id="findAllCount" resultType="int">
+        select count(*)
+        from tb_user
+        where status = 1
+    </select>
+    <!--今日新增用户数-->
+    <select id="findDayAddUser" resultType="int">
+        select count(*)
+        from tb_user
+        where status = 1
+          and date_format(create_time, '%Y-%m-%d') = date_format(#{date}, '%Y-%m-%d')
+    </select>
+    <!--本月新增用户数-->
+    <select id="findMonthAddUser" resultType="int">
+        select count(*)
+        from tb_user
+        where status = 1
+          and date_format(create_time, '%Y-%m') = date_format(#{date}, '%Y-%m')
+    </select>
+    <!--本年新增用户数-->
+    <select id="findYearAddUser" resultType="int">
+        select count(*)
+        from tb_user
+        where status = 1
+          and date_format(create_time, '%Y') = date_format(#{date}, '%Y')
+    </select>
+    <!--今日收入-->
+    <select id="findDayIncome" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0)
+        from tb_order
+        where status in (3, 4)
+          and date_format(pay_time, '%Y-%m-%d') = date_format(#{date}, '%Y-%m-%d')
+    </select>
+    <!--本月收入-->
+    <select id="findMonthIncome" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0)
+        from tb_order
+        where status in (3, 4)
+          and date_format(pay_time, '%Y-%m') = date_format(#{date}, '%Y-%m')
+    </select>
+    <!--本年收入-->
+    <select id="findYearIncome" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0)
+        from tb_order
+        where status in (3, 4)
+          and date_format(pay_time, '%Y') = date_format(#{date}, '%Y')
+    </select>
+    <!--今日发单数量-->
+    <select id="findIndentCount" resultType="int">
+        select count(*)
+        from tb_order
+        where status in (3, 4)
+          and date_format(pay_time, '%Y-%m-%d') = date_format(#{date}, '%Y-%m-%d')
+    </select>
+
+    <select id="selectPayOrderAnalyze" resultType="com.sqx.modules.order.entity.TbOrder">
+        select tor.*, gs.shop_name as shopName from tb_order tor left join goods_shop gs on tor.shop_id = gs.shop_id
+        where tor.is_pay = 1 and tor.status in (6, 3, 4)
+        <if test="dateType=='day'">
+            and date_format(tor.pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(tor.pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(tor.pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        order by tor.pay_time desc
+    </select>
+
+    <select id="sumOrderMonth" resultType="int">
+        select count(*)
+        from tb_order
+        where user_id = #{userId}
+          and status in (3, 4)
+          and date_format(pay_time, '%Y-%m') = date_format(#{date}, '%Y-%m')
+    </select>
+
+    <select id="sumTopUpMonth" resultType="java.math.BigDecimal">
+        select ifnull(sum(money), 0)
+        from pay_details
+        where user_id = #{userId}
+          and classify = 2
+          and date_format(pay_time, '%Y-%m') = date_format(#{date}, '%Y-%m')
+    </select>
+
+    <select id="selectTopUpStatistics" resultType="java.math.BigDecimal">
+        select ifnull(sum(money), 0) from pay_details where classify = 2
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectTakeCount" resultType="int">
+        select count(*) from tb_order where
+        <if test="orderType!=null and orderType==1">
+            order_type in (1,3)
+        </if>
+        <if test="orderType!=null and orderType==2">
+            order_type =2
+        </if>
+        and status = 4
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectTakeMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where
+        <if test="orderType!=null and orderType==1">
+            order_type in (1,3)
+        </if>
+        <if test="orderType!=null and orderType==2">
+            order_type =2
+        </if>
+        and status = 4
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="cancelOrderCount" resultType="int">
+        select count(*) from tb_order where status = 5
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="cancelOrderMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where status = 5
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectNewShopCount" resultType="int">
+        select count(*) from goods_shop where 1 = 1
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="allUserCount" resultType="int">
+        select count(*) from tb_user where status = 1
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="phoneUserCount" resultType="int">
+        select count(*) from tb_user where status = 1 and phone is not null
+        <if test="dateType=='day'">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="selectRankingList" resultType="com.sqx.modules.order.entity.TbOrder">
+        SELECT
+        *,
+        @rank_num := @rank_num + 1 AS rankNum
+        FROM
+        ( SELECT @rank_num := 0 ) r,
+        ( SELECT ifnull( SUM( pay_money - IFNULL(cancel_money,0) ), 0 ) AS shopMoney, tor.shop_id , u.shop_name
+        FROM tb_order tor left join goods_shop u on tor.shop_id = u.shop_id
+        WHERE tor.shop_id IS NOT NULL and tor.status = 4
+        <if test="dateType=='day'">
+            and date_format(tor.pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(tor.pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(tor.pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        GROUP BY tor.shop_id ) a
+        ORDER BY shopMoney DESC
+    </select>
+
+    <select id="shopMoney" resultType="java.math.BigDecimal">
+        select ifnull(sum(pay_money-ifnull(cancel_money,0)), 0) from tb_order where status = 4 and shop_id = #{shopId}
+        <if test="dateType=='day'">
+            and date_format(pay_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(pay_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(pay_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+    <select id="moneyDayMoney" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(money), 0) AS money
+        FROM
+        user_money_details u
+        WHERE u.shop_id =#{shopId} AND u.type=1
+        <if test="dateType=='day'">
+            and date_format(u.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="dateType=='month'">
+            and date_format(u.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="dateType=='year'">
+            and date_format(u.create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        <if test="languageType != null and languageType != ''">
+            and u.language_type = #{languageType}
+        </if>
+    </select>
+
+</mapper>

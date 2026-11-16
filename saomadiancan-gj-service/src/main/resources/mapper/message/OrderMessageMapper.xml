@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.message.dao.OrderMessageDao">
+
+    <select id="selectReadFlag" resultType="com.sqx.modules.message.entity.MessageInfo">
+        select * from message_info where read_flag = 2 and shop_id in
+        <foreach item="item" collection="shopIds"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by create_at desc
+    </select>
+
+    <select id="selectReadFlagCount" resultType="int">
+        select count(*) from message_info where read_flag = 2 and shop_id in
+        <foreach item="item" collection="shopId"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <update id="allcheckOrderMessage">
+        update message_info set read_flag = 1 where shop_id in
+        <foreach item="item" collection="shopId"  open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+</mapper>

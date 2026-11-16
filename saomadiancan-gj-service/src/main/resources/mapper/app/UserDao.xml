@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.app.dao.UserDao">
+    <select id="selectUserPage" resultType="com.sqx.modules.app.entity.UserEntity">
+        select * from tb_user
+        where 1=1
+        <if test="member!=null and member!=-1 and member!=0">
+            and member=#{member}
+        </if>
+        <if test="member!=null and member==0">
+            and (member=#{member} or member is null)
+        </if>
+        <if test="search!=null and search!=''">
+            and (user_id=#{search} or phone = #{search} or user_name =#{search} )
+        </if>
+        <if test="sex!=null and sex!=0">
+            and sex=#{sex}
+        </if>
+        <if test="platform!=null and platform!=''">
+            and platform=#{platform}
+        </if>
+        <if test="sysPhone!=null and sysPhone!=''">
+            and sys_phone=#{sysPhone}
+        </if>
+        <if test="type!=null and type!=''">
+            and type=#{type}
+        </if>
+        <if test="status!=null and status!=0">
+            and status=#{status}
+        </if>
+        <if test="userName!=null and userName!=''">
+            and user_name = #{userName}
+        </if>
+        <if test="shopAdminFlag!=null">
+            and shop_admin_flag = #{shopAdminFlag}
+        </if>
+        <if test="email!=null and email!=''">
+            and email = #{email}
+        </if>
+        order by create_time desc
+    </select>
+
+    <select id="queryInviterCount" resultType="int">
+        select count(*) from tb_user
+        where inviter_code=#{inviterCode}
+    </select>
+
+    <select id="queryUserCount" resultType="int">
+        select count(*)from tb_user where 1=1
+        <if test="type==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+
+    </select>
+    <select id="queryPayMoney" resultType="Double">
+        select sum(money) from pay_details where `state`=1
+        <if test="type==1">
+            and date_format(create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+    <select id="queryCourseOrder" resultType="com.sqx.modules.app.response.CourseOrderResponse">
+        select * from (
+        select c.course_id as courseId,sum(o.pay_money) as 'coursemoney' ,count(*) as 'coursenum',any_value(c.title) as
+        'coursename' from orders o , course c where o.course_id=c.course_id and o.status=1 and o.orders_type=1
+        <if test="type==1">
+            and date_format(o.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(o.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(o.create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+        group by c.course_id
+        ) a
+        order by a.coursenum desc
+    </select>
+    <select id="userMessage" resultType="int">
+        select count(*) from tb_user t ,user_vip v where t.user_id=v.user_id and is_vip=1
+        <if test="type==1">
+            and date_format(t.create_time,'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format(t.create_time,'%Y-%m')=date_format(#{date},'%Y-%m')
+        </if>
+        <if test="type==3">
+            and date_format(t.create_time,'%Y')=date_format(#{date},'%Y')
+        </if>
+    </select>
+
+
+    <insert id="insertUser" parameterType="com.sqx.modules.app.entity.UserEntity" useGeneratedKeys="true"
+            keyProperty="userId">
+        INSERT INTO tb_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="null != userName and '' != userName">
+                user_name,
+            </if>
+            <if test="null != phone and '' != phone">
+                phone,
+            </if>
+            <if test="null != avatar and '' != avatar">
+                avatar,
+            </if>
+            <if test="null != sex and '' != sex">
+                sex,
+            </if>
+            <if test="null != age and '' != age">
+                age,
+            </if>
+            <if test="null != openId and '' != openId">
+                open_id,
+            </if>
+            <if test="null != wxOpenId and '' != wxOpenId">
+                wx_open_id,
+            </if>
+            <if test="null != password and '' != password">
+                password,
+            </if>
+            <if test="null != createTime and '' != createTime">
+                create_time,
+            </if>
+            <if test="null != updateTime and '' != updateTime">
+                update_time,
+            </if>
+            <if test="null != appleId and '' != appleId">
+                apple_id,
+            </if>
+            <if test="null != sysPhone and '' != sysPhone">
+                sys_phone,
+            </if>
+            <if test="null != status and '' != status">
+                status,
+            </if>
+            <if test="null != platform and '' != platform">
+                platform,
+            </if>
+            <if test="null != jifen and '' != jifen">
+                jifen,
+            </if>
+            <if test="null != invitationCode and '' != invitationCode">
+                invitation_code,
+            </if>
+            <if test="null != inviterCode and '' != inviterCode">
+                inviter_code,
+            </if>
+            <if test="null != clientid and '' != clientid">
+                clientid,
+            </if>
+            <if test="null != zhiFuBaoName and '' != zhiFuBaoName">
+                zhi_fu_bao_name,
+            </if>
+            <if test="null != zhiFuBao and '' != zhiFuBao">
+                zhi_fu_bao
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="null != userName and '' != userName">
+                #{userName},
+            </if>
+            <if test="null != phone and '' != phone">
+                #{phone},
+            </if>
+            <if test="null != avatar and '' != avatar">
+                #{avatar},
+            </if>
+            <if test="null != sex and '' != sex">
+                #{sex},
+            </if>
+            <if test="null != age and '' != age">
+                #{age},
+            </if>
+            <if test="null != openId and '' != openId">
+                #{openId},
+            </if>
+            <if test="null != wxOpenId and '' != wxOpenId">
+                #{wxOpenId},
+            </if>
+            <if test="null != password and '' != password">
+                #{password},
+            </if>
+            <if test="null != createTime and '' != createTime">
+                #{createTime},
+            </if>
+            <if test="null != updateTime and '' != updateTime">
+                #{updateTime},
+            </if>
+            <if test="null != appleId and '' != appleId">
+                #{appleId},
+            </if>
+            <if test="null != sysPhone and '' != sysPhone">
+                #{sysPhone},
+            </if>
+            <if test="null != status and '' != status">
+                #{status},
+            </if>
+            <if test="null != platform and '' != platform">
+                #{platform},
+            </if>
+            <if test="null != jifen and '' != jifen">
+                #{jifen},
+            </if>
+            <if test="null != invitationCode and '' != invitationCode">
+                #{invitationCode},
+            </if>
+            <if test="null != inviterCode and '' != inviterCode">
+                #{inviterCode},
+            </if>
+            <if test="null != clientid and '' != clientid">
+                #{clientid},
+            </if>
+            <if test="null != zhiFuBaoName and '' != zhiFuBaoName">
+                #{zhiFuBaoName},
+            </if>
+            <if test="null != zhiFuBao and '' != zhiFuBao">
+                #{zhiFuBao}
+            </if>
+        </trim>
+    </insert>
+    <select id="takingOrdersMessage" resultType="com.sqx.modules.app.response.TakingOrderResponse">
+        SELECT
+        SUM( o.order_number ) AS orderNumber,
+        g.game_name,
+        SUM( o.pay_money ) AS payMoney
+        FROM
+        ( orders o LEFT JOIN order_taking t ON o.order_taking_id = t.id )
+        LEFT JOIN game g ON g.id = t.game_id
+        WHERE
+        o.state = 1
+        <if test="type==1">
+            and date_format("o.create_time",'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==2">
+            and date_format("o.create_time",'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+        <if test="type==3">
+            and date_format("o.create_time",'%Y-%m-%d')=date_format(#{date},'%Y-%m-%d')
+        </if>
+
+        GROUP BY
+        g.game_name
+    </select>
+
+
+
+    <!--<select id="selectUserList" resultType="com.sqx.modules.app.entity.UserEntity">
+        select * from tb_user
+        where 1=1
+        <if test="userName!=null and userName!''">
+            and user_name =#{userName}
+        </if>
+        order by create_time desc
+    </select>-->
+
+    <select id="selectAllUser" resultType="com.sqx.modules.app.entity.UserEntity">
+        select tu.*, um.sex as umSex from tb_user tu left join user_message um on tu.user_id = um.user_id where 1 = 1
+        <if test="phone!=null and phone!=''">
+            and phone = #{phone}
+        </if>
+        <if test="userType!=null">
+            and type = #{userType}
+        </if>
+        order by tu.create_time desc
+    </select>
+
+    <select id="findUserMessage" resultType="com.sqx.modules.app.entity.UserEntity">
+        select tu.*, um.birthday as birthday, um.height as height, um.weight as weight, um.occupation as occupation, um.individual_resume as individualResume,
+        um.picture_list as pictureList, um.sex as umSex
+         from tb_user tu left join user_message um on tu.user_id = um.user_id where tu.user_id = #{userId}
+    </select>
+
+    <select id="selectUser" resultType="com.sqx.modules.app.entity.UserEntity">
+        select * from tb_user where 1 = 1
+        <if test="userName!=null and userName!=''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone!=null and phone!=''">
+            and phone like concat('%',#{phone},'%')
+        </if>
+    </select>
+
+    <select id="selectUserById" resultType="com.sqx.modules.app.entity.UserEntity">
+        select tu.*, um.money as money, ui.integral_num as integralNum
+        from tb_user tu
+        left join user_money um on tu.user_id = um.user_id
+        left join user_integral ui on tu.user_id = ui.user_id
+        where tu.user_id = #{userId}
+    </select>
+
+</mapper>

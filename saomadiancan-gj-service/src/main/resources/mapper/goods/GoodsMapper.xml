@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsDao">
+
+    <!--<select id="selectGoodsList" resultType="com.sqx.modules.goods.entity.Goods">
+        select * from goods where 1 = 1
+        <if test="classify!=null and classify!=''">
+            and classify = #{classify}
+        </if>
+        <if test="goodsName!=null and goodsName!=''">
+            and goods_name = #{goodsName}
+        </if>
+        <if test="putawayFlag!=null and putawayFlag!=''">
+            and putaway_flag = #{putawayFlag}
+        </if>
+        order by create_time desc
+    </select>-->
+
+    <select id="selectGoodsClassifyList" resultType="com.sqx.modules.goods.entity.Goods">
+        select DISTINCT g.classify_id
+        from goods g
+                 left join goods_shop_relevancy gsr on gsr.goods_id = g.goods_id
+        where 1 = 1
+          and gsr.shop_id = #{shopId} or gsr.shop_id = 0
+        order by g.classify_id asc
+    </select>
+
+    <select id="selectClassify" resultType="com.sqx.modules.goods.entity.GoodsClassify">
+        SELECT
+            gc.classify_id,
+            gc.shop_id,
+            gci.classify_name,
+            gci.language_type,
+            gci.language_name
+        FROM goods_classify AS gc
+        LEFT JOIN goods_classify_i18n AS gci ON gc.classify_id = gci.classify_id
+        where gc.classify_id = #{classifyId}
+        <if test="shopId != null">
+            and (gc.shop_id = #{shopId} OR gc.shop_id = 0)
+        </if>
+        <if test="languageType!=null and languageType != ''">
+            and gci.language_type = #{languageType}
+        </if>
+    </select>
+
+    <select id="selectShortShop" resultType="com.sqx.modules.goods.entity.GoodsShop">
+        select shop_id, shop_name, shop_lat, shop_lng, open_time, close_time, detailed_address,
+        shop_banner,putaway_flag,
+        (st_distance (point (shop_lat, shop_lng), point(#{lat},#{lng}) ) *111195) AS distancess
+        from goods_shop where 1 = 1
+        <if test="shopName!=null and shopName!=''">
+            and shop_name like concat('%',#{shopName},'%')
+        </if>
+        <if test="shopId!=null">
+            and shop_id = #{shopId}
+        </if>
+        order by distancess asc
+    </select>
+
+    <select id="selectAllClassify" resultType="com.sqx.modules.goods.entity.GoodsClassify">
+        SELECT
+            gc.classify_id,
+            gc.shop_id,
+            gci.classify_name,
+            gci.language_type,
+            gci.language_name,
+            gs.shop_name
+        FROM goods_classify AS gc
+        LEFT JOIN goods_classify_i18n AS gci ON gc.classify_id = gci.classify_id
+        LEFT JOIN goods_shop gs ON gc.shop_id = gs.shop_id
+        <where>
+            <if test="shopId!=null">
+                and (gc.shop_id = #{shopId} or gc.shop_id = 0)
+            </if>
+            <if test="languageType!=null and languageType != ''">
+                and gci.language_type = #{languageType}
+            </if>
+        </where>
+    </select>
+
+    <insert id="shopAddGoods">
+        insert into goods_shop_relevancy (shop_id, goods_id) values
+        <foreach collection="goodsIdList" item="item" open="(" close=")" separator=",">
+            (#{shopId}, #{item})
+        </foreach>
+    </insert>
+
+    <select id="selectGoodsByClassify" resultType="com.sqx.modules.goods.entity.Goods">
+        SELECT
+            gsr.sales AS sales,
+            gsr.inventory AS inventory,
+            g.goods_id,
+            g.classify_id,
+            g.goods_cover,
+            g.goods_picture,
+            g.create_time,
+            g.sales_volume,
+            g.`status`,
+            g.pack_money,
+            g.goods_money,
+            g.original_money,
+            g.shop_id,
+            gi.goods_name,
+            gi.goods_synopsis,
+            gi.goods_describe,
+            gi.goods_label,
+            gi.language_type,
+            gi.language_name
+        FROM
+            goods_shop_relevancy AS gsr
+        LEFT JOIN goods AS g ON gsr.goods_id = g.goods_id
+        LEFT JOIN goods_i18n AS gi ON g.goods_id = gi.goods_id
+        WHERE
+            gsr.shop_id = #{shopId}
+          AND g.classify_id = #{classifyId}
+          AND gsr.`STATUS` = 0
+          <if test="languageType != null">
+              AND gi.language_type = #{languageType}
+          </if>
+        ORDER BY
+            g.classify_id ASC
+    </select>
+    <select id="getById" resultType="com.sqx.modules.goods.entity.Goods">
+        SELECT
+            g.goods_id,
+            g.classify_id,
+            g.goods_cover,
+            g.goods_picture,
+            g.create_time,
+            g.sales_volume,
+            g.`status`,
+            g.pack_money,
+            g.goods_money,
+            g.original_money,
+            g.shop_id,
+            gi.goods_name,
+            gi.goods_synopsis,
+            gi.goods_describe,
+            gi.goods_label,
+            gi.language_type,
+            gi.language_name
+        FROM
+            goods AS g
+        LEFT JOIN goods_i18n gi ON g.goods_id = gi.goods_id
+        WHERE
+            g.goods_id = #{goodsId}
+          AND gi.language_type = #{languageType}
+    </select>
+
+</mapper>

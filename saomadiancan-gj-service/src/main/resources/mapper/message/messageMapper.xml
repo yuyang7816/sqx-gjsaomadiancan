@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.message.dao.MessageInfoDao">
+
+    <select id="findMessageList" resultType="com.sqx.modules.message.entity.MessageInfo">
+        select mi.*, tu.phone as phone from message_info mi left join tb_user tu on mi.user_id = tu.user_id where 1 = 1
+        <if test="userId!=null and userId!=''">
+            and mi.user_id = #{userId}
+        </if>
+        <if test="languageType!=null and languageType!=''">
+            and mi.languageType = #{languageType}
+        </if>
+        order by mi.create_at desc
+    </select>
+
+</mapper>

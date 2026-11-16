@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.banner.dao.BannerDao">
+
+    <select id="selectList" resultType="com.sqx.modules.banner.entity.Banner">
+        select * from banner
+        where classify=#{classify} and `state`=1
+        <if test="languageType != null and languageType != ''">
+            and language_type = #{languageType}
+        </if>
+        order by `sort` desc
+    </select>
+
+    <select id="selectLists" resultType="com.sqx.modules.banner.entity.Banner">
+        select * from banner
+        where classify=#{classify}
+        <if test="languageType != null and languageType != ''">
+            and language_type = #{languageType}
+        </if>
+        order by `sort` desc
+    </select>
+    <select id="selectPage" resultType="com.sqx.modules.banner.entity.Banner">
+        select * from banner
+        where classify=#{classify}
+        <if test="state!=null and state!=-1">
+            and state=#{state}
+        </if>
+        <if test="languageType != null and languageType != ''">
+            and language_type = #{languageType}
+        </if>
+    </select>
+
+
+</mapper>

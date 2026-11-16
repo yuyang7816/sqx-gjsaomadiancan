@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sqx.modules.datacentre.dao.ShopAdminDao">
+
+    <select id="selectShopList" resultType="com.sqx.modules.goods.entity.GoodsShop">
+        select gs.shop_name from goods_shop gs left join sys_user_shop sus on sus.shop_id = gs.shop_id where sus.user_id = #{userId}
+    </select>
+
+</mapper>

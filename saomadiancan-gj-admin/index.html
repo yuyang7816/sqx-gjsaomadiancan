@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+   <!-- <script type="text/javascript" src="//api.map.baidu.com/api?v=2.0&ak=miP4RMG1yZoROVRSqTPghvUaRb68iGUB"></script> -->
+  <title>省钱兄国际扫码点餐系统</title>
+  <% if (process.env.NODE_ENV === 'production') { %>
+    <!-- 生产环境 -->
+    <script>document.write('<script src="./config/index.js?t=' + new Date().getTime() + '"><\/script>');</script>
+    <link rel="shortcut icon" type="image/x-icon" href="./static/img/favicon.ico">
+    <script src="./static/config/index.js"></script>
+    <script src="./static/plugins/mock-1.0.0-beta3/mock-min.js"></script>
+    <script src="./static/plugins/echarts-3.8.5/echarts.common.min.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/ueditor.config.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/ueditor.all.min.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/lang/zh-cn/zh-cn.js"></script>
+    <script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=ZBABZ-ZWECU-UQTVV-4LYDR-COK3F-5SF75"></script>
+    <script src="https://map.qq.com/api/gljs?v=1.exp&key=ZBABZ-ZWECU-UQTVV-4LYDR-COK3F-5SF75"></script>
+    <script src="https://3gimg.qq.com/lightmap/components/geolocation/geolocation.min.js"></script>
+  <% }else { %>
+    <!-- 开发环境 -->
+    <link rel="shortcut icon" type="image/x-icon" href="./static/img/favicon.ico">
+    <script src="./static/config/index.js"></script>
+    <script src="./static/plugins/mock-1.0.0-beta3/mock-min.js"></script>
+    <script src="./static/plugins/echarts-3.8.5/echarts.common.min.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/ueditor.config.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/ueditor.all.min.js"></script>
+    <script src="./static/plugins/ueditor-1.4.3.3/lang/zh-cn/zh-cn.js"></script>
+    <script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=ZBABZ-ZWECU-UQTVV-4LYDR-COK3F-5SF75"></script>
+    <script src="https://map.qq.com/api/gljs?v=1.exp&key=ZBABZ-ZWECU-UQTVV-4LYDR-COK3F-5SF75"></script>
+    <script src="https://3gimg.qq.com/lightmap/components/geolocation/geolocation.min.js"></script>
+	<script
+				async src="https://chatgpt.xianmxkj.com/googleapis/maps/api/js?key=AIzaSyDXVZG8xz9fpRQYq7QFyxiU7AD3Wsr7a9s&loading=async&libraries=maps,marker,geometry">
+			</script>
+			<script src="https://use.fontawesome.com/releases/v6.2.0/js/all.js"></script>
+			<script>
+				(g => {
+					var h, a, k, p = "The Google Maps JavaScript API",
+						c = "google",
+						l = "importLibrary",
+						q = "__ib__",
+						m = document,
+						b = window;
+					b = b["google"] || (b["google"] = {});
+					var d = b.maps || (b.maps = {}),
+						r = new Set,
+						e = new URLSearchParams,
+						u = () => h || (h = new Promise(async (f, n) => {
+							await (a = m.createElement("script"));
+							e.set("libraries", [...r] + "");
+							for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]);
+							e.set("callback", "google" + ".maps." + q);
+							a.src = `https://maps.googleapisapis.com/maps/api/js?` + e;
+							d[q] = f;
+							a.onerror = () => h = n(Error(p + " could not load."));
+							a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+							m.head.append(a)
+						}));
+					d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[
+						l](f, ...n))
+				})({
+					key: "AIzaSyDXVZG8xz9fpRQYq7QFyxiU7AD3Wsr7a9s",
+					v: "weekly",
+					// Use the 'v' parameter to indicate the version to use (weekly, beta, alpha, etc.).
+					// Add other bootstrap parameters as needed, using camel case.
+				});
+			</script>
+	
+			<script type="text/javascript">
+				console.log(returnCitySN)
+				document.cookie = returnCitySN["cip"]
+			</script>
+  <% } %>
+</head>
+<body>
+  <div id="app"></div>
+</body>
+</html>

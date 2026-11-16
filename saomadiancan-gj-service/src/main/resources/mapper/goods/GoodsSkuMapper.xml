@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsSkuDao">
+
+    <insert id="insertGoodsSku" parameterType="com.sqx.modules.goods.entity.GoodsSku" useGeneratedKeys="true" keyProperty="skuId">
+        insert into goods_sku (goods_id, parent_id, sku_name, goods_money, sales, inventory, attr_name)
+        values (#{goodsId}, #{parentId}, #{skuName}, #{goodsMoney}, #{sales}, #{inventory}, #{attrName})
+    </insert>
+    <select id="selectGoodsSkuByGoodsId" resultType="com.sqx.modules.goods.entity.GoodsSku">
+        SELECT
+            gs.id,
+            gs.goods_id,
+            gs.sku_img,
+            gs.sku_original_price,
+            gs.sku_price,
+            gs.stock,
+            gs.sales,
+            gsi.detail_json,
+            gsi.language_type,
+            gsi.language_name
+        FROM
+            goods_sku AS gs
+        LEFT JOIN goods_sku_i18n AS gsi ON gs.id = gsi.sku_id
+        where gs.goods_id = #{goodsId}
+        <if test="languageType != null and languageType != ''">
+            and gsi.language_type = #{languageType}
+        </if>
+    </select>
+
+</mapper>

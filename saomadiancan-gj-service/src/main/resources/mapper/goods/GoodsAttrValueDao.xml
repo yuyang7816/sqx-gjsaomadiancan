@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsAttrValueDao">
+
+    <select id="listByAttrIds" resultType="com.sqx.modules.goods.entity.GoodsAttrValue">
+        SELECT
+            gav.id,
+            gav.goods_id,
+            gav.attr_id,
+            gavi.detail,
+            gavi.`value`,
+            gavi.language_type,
+            gavi.language_name
+        FROM
+            goods_attr_value gav
+        LEFT JOIN goods_attr_value_i18n gavi ON gav.id = gavi.attr_value_id
+        <where>
+            <if test="attrIdList != null and attrIdList.size > 0">
+                and gav.id in
+                <foreach collection="attrIdList" item="attrId" open="(" close=")" separator=",">
+                    #{attrId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="findAllByGoodsId" resultType="com.sqx.modules.goods.entity.GoodsAttrValue">
+        SELECT
+            gav.id,
+            gav.goods_id,
+            gav.attr_id,
+            gavi.detail,
+            gavi.`value`,
+            gavi.language_type,
+            gavi.language_name
+        FROM
+            goods_attr_value gav
+        LEFT JOIN goods_attr_value_i18n gavi ON gav.id = gavi.attr_value_id
+        where gav.goods_id = #{goodsId}
+        <if test="languageType != null and languageType != ''">
+            and gavi.language_type = #{languageType}
+        </if>
+    </select>
+</mapper>

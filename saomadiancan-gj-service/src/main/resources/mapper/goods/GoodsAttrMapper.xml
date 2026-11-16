@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sqx.modules.goods.dao.GoodsAttrDao">
+
+    <insert id="insertGoodsAttr" useGeneratedKeys="true" keyColumn="id" keyProperty="id" parameterType="com.sqx.modules.goods.entity.GoodsAttr">
+        INSERT INTO goods_attr
+        <trim prefix="(" suffix=")" suffixOverrides=";">
+            <if test="null != attrName and '' != attrName">
+                attr_name,
+            </if>
+            <if test="null != goodsId and '' != goodsId">
+                goods_id,
+            </if>
+            <if test="null != ruleId and '' != ruleId">
+                rule_id
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=";">
+            <if test="null != attrName and '' != attrName">
+                #{attrName},
+            </if>
+            <if test="null != goodsId and '' != goodsId">
+                #{goodsId},
+            </if>
+            <if test="null != ruleId and '' != ruleId">
+                #{ruleId}
+            </if>
+        </trim>
+    </insert>
+
+    <select id="listByGoodsId" resultType="com.sqx.modules.goods.entity.GoodsAttr">
+        SELECT
+            ga.id,
+            ga.goods_id,
+            ga.rule_id,
+            gai.attr_name,
+            gai.language_type,
+            gai.language_name
+        FROM
+            `goods_attr` ga
+        LEFT JOIN goods_attr_i18n gai ON ga.id = gai.attr_id
+        <where>
+            <if test="goodsId != null">
+                and ga.goods_id = #{goodsId}
+            </if>
+            <if test="languageType != null and languageType != ''">
+                and gai.language_type = #{languageType}
+            </if>
+        </where>
+    </select>
+    <select id="getByGoodsId" resultType="com.sqx.modules.goods.entity.GoodsAttr">
+        SELECT
+        ga.id,
+        ga.goods_id,
+        ga.rule_id,
+        gai.attr_name,
+        gai.language_type,
+        gai.language_name
+        FROM
+        `goods_attr` ga
+        LEFT JOIN goods_attr_i18n gai ON ga.id = gai.attr_id
+        <where>
+            <if test="languageType != null and languageType != ''">
+                and gai.language_type = #{languageType}
+            </if>
+        </where>
+    </select>
+</mapper>
